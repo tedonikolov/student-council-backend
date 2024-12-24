@@ -2,6 +2,7 @@ package bg.tuvarna.service;
 
 import bg.tuvarna.model.dto.CustomPage;
 import bg.tuvarna.model.dto.NewsRequestDTO;
+import bg.tuvarna.model.dto.NewsResponse;
 import bg.tuvarna.model.dto.PageRequest;
 import bg.tuvarna.model.entities.News;
 
@@ -14,7 +15,7 @@ public interface NewsService {
     void delete(Long id);
     List<News> getAll();
     List<News> getAllByYear(Year date);
-    News getNews(Long id);
-    List<News> firstThreeNews();
-    CustomPage<News> getPagesWithNews(PageRequest pageRequest);
+    NewsResponse getNews(Long id);
+    List<NewsResponse> lastThreeNews();
+    CustomPage<NewsResponse> getPagesWithNews(PageRequest pageRequest);
 }

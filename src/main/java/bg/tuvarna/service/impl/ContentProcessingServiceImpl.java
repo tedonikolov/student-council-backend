@@ -10,7 +10,6 @@ import org.bytedeco.ffmpeg.global.avcodec;
 import org.bytedeco.javacv.FFmpegFrameGrabber;
 import org.bytedeco.javacv.FFmpegFrameRecorder;
 import org.bytedeco.javacv.Frame;
-import software.amazon.awssdk.services.s3.model.NoSuchKeyException;
 
 import javax.imageio.ImageIO;
 import javax.imageio.ImageWriteParam;
@@ -21,10 +20,8 @@ import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.StandardCopyOption;
 
 @ApplicationScoped
 public class ContentProcessingServiceImpl implements ContentProcessingService {
