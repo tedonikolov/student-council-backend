@@ -5,6 +5,8 @@ import bg.tuvarna.model.entities.Profile;
 import bg.tuvarna.repository.ProfileRepository;
 import bg.tuvarna.service.ProfileService;
 import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.transaction.Transactional;
+import jakarta.ws.rs.core.Response;
 
 import java.util.List;
 
@@ -18,8 +20,16 @@ public class ProfileServiceImpl implements ProfileService {
 
 
     @Override
-    public void createProfile(ProfileDTO profileDTO) {
+    @Transactional
+    public Response createProfile(ProfileDTO profileDTO) {
+        Profile profile = new Profile();
+        profile.setUsername(profileDTO.username());
 
+        profile.setRole("admin");
+
+        profileRepository.persist(profile);
+
+        return Response.ok().build();
     }
 
     @Override

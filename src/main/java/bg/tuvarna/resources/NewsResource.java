@@ -5,6 +5,8 @@ import bg.tuvarna.model.dto.NewsRequestDTO;
 import bg.tuvarna.model.dto.NewsResponse;
 import bg.tuvarna.model.dto.PageRequest;
 import bg.tuvarna.service.NewsService;
+import jakarta.annotation.security.PermitAll;
+import jakarta.annotation.security.RolesAllowed;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
@@ -25,11 +27,13 @@ public class NewsResource {
     @Operation(summary = "Create news.",
             description = "Creates news")
     @Consumes(MediaType.MULTIPART_FORM_DATA)
+    @RolesAllowed("ADMIN")
     public Response addAnnouncement(NewsRequestDTO newsRequestDTO) {
         return Response.ok(newsService.save(newsRequestDTO)).build();
     }
 
     @GET
+    @PermitAll
     @Path("/get/newsByPages")
     public Response newsByPages(@RequestBody PageRequest request){
         CustomPage<NewsResponse> news = newsService.getPagesWithNews(request);
@@ -37,6 +41,7 @@ public class NewsResource {
     }
 
     @GET
+    @PermitAll
     @Path("/get/lastThree")
     public Response lastThreeNews(){
         List<NewsResponse> news = newsService.lastThreeNews();
@@ -44,6 +49,7 @@ public class NewsResource {
     }
 
     @GET
+    @PermitAll
     @Path("/{id}")
     public Response getNews(@PathParam("id") Long id) {
         NewsResponse news = newsService.getNews(id);

@@ -1,6 +1,5 @@
 package bg.tuvarna.model.entities;
 
-import bg.tuvarna.enums.ProfileRole;
 import io.quarkus.hibernate.orm.panache.PanacheEntity;
 import jakarta.persistence.Entity;
 import jakarta.persistence.OneToOne;
@@ -13,7 +12,8 @@ import java.time.LocalDate;
 public class Profile extends PanacheEntity {
     private String username;
     private String password;
-    private ProfileRole role;
+    public String role;
+
     private String email;
     private String fullName;
     private String phoneNumber;
@@ -97,11 +97,11 @@ public class Profile extends PanacheEntity {
         this.phoneNumber = phoneNumber;
     }
 
-    public ProfileRole getRole() {
+    public String getRole() {
         return role;
     }
 
-    public void setRole(ProfileRole role) {
+    public void setRole(String role) {
         this.role = role;
     }
 

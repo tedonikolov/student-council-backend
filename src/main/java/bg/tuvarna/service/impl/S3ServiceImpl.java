@@ -24,14 +24,18 @@ public class S3ServiceImpl implements S3Service {
     private final String bucketName = "s3-bucket";
 
     public ResponseInputStream<GetObjectResponse> getFile(String fileName) {
-        if (s3Client.listBuckets().buckets().stream().noneMatch(b -> b.name().equals(bucketName))) {
-            return null;
+        try {
+            if (s3Client.listBuckets().buckets().stream().noneMatch(b -> b.name().equals(bucketName))) {
+                return null;
+            }
+            GetObjectRequest getObjectRequest = GetObjectRequest.builder()
+                    .bucket(bucketName)
+                    .key(fileName)
+                    .build();
+            return s3Client.getObject(getObjectRequest);
+        } catch (Exception e) {
+            throw new RuntimeException("Error getting file from S3: " + e.getMessage());
         }
-        GetObjectRequest getObjectRequest = GetObjectRequest.builder()
-                .bucket(bucketName)
-                .key(fileName)
-                .build();
-        return s3Client.getObject(getObjectRequest);
     }
 
     public DeleteObjectResponse deleteFile(String fileName) {

@@ -5,7 +5,6 @@ import bg.tuvarna.service.S3Service;
 import com.luciad.imageio.webp.WebPWriteParam;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
-import org.apache.tika.Tika;
 import org.bytedeco.ffmpeg.global.avcodec;
 import org.bytedeco.javacv.FFmpegFrameGrabber;
 import org.bytedeco.javacv.FFmpegFrameRecorder;
@@ -21,7 +20,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.nio.file.Path;
 
 @ApplicationScoped
 public class ContentProcessingServiceImpl implements ContentProcessingService {
@@ -30,14 +28,14 @@ public class ContentProcessingServiceImpl implements ContentProcessingService {
 
     public String process(File file, String fileName) throws IOException {
         try {
-            String mimeType = detectFileType(file.toPath());
+            String mimeType = "asd";
 
             if (mimeType != null) {
                 if (mimeType.startsWith("image")) {
                     if (!mimeType.contains("webp")) { //should check if there is a created thumbnail as well
                         File webPFile = convertToWebP(file);
                         fileName = fileName.replaceFirst("\\.[^.]+$", ".webp");
-                        s3Service.deleteFile(fileName);
+//                        s3Service.deleteFile(fileName);
                         s3Service.uploadToS3(webPFile, fileName);
                         //TODO here add retry content processing  logic
                         try {
@@ -49,7 +47,7 @@ public class ContentProcessingServiceImpl implements ContentProcessingService {
                         webPFile.delete();
                     }
                 } else if (mimeType.startsWith("video")) {
-                    s3Service.deleteFile(fileName);
+//                    s3Service.deleteFile(fileName);
                     fileName = "videos/" + fileName;
                     processAndUploadVideo(file, fileName);
                 } else {
@@ -67,16 +65,16 @@ public class ContentProcessingServiceImpl implements ContentProcessingService {
         }
     }
 
-    private String detectFileType(Path filePath) {
-        Tika tika = new Tika();
-        try {
-            return tika.detect(filePath.toFile());
-        } catch (IOException e) {
-            System.out.println("Tika failed to determine file format: " + e.getMessage());
-            e.printStackTrace();
-            return "unknown";
-        }
-    }
+//    private String detectFileType(Path filePath) {
+//        Tika tika = new Tika();
+//        try {
+//            return tika.detect(filePath.toFile());
+//        } catch (IOException e) {
+//            System.out.println("Tika failed to determine file format: " + e.getMessage());
+//            e.printStackTrace();
+//            return "unknown";
+//        }
+//    }
 
     public File convertToWebP(File inputFile) throws IOException {
         BufferedImage image = ImageIO.read(inputFile);

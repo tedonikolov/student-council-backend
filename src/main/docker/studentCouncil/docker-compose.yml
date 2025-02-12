@@ -1,44 +1,91 @@
 version: "3.8"
 networks:
-  insurance-network:
+  council-network:
 
 services:
   postgres:
     image: postgres:latest
     container_name: councilDB
+    networks:
+      - council-network
     environment:
       - POSTGRES_DB=councilDB
       - POSTGRES_PASSWORD=1234
       - POSTGRES_USER=postgres
     ports:
-      - 5555:5432
+      - "5555:5432"
 
-  s3ninja:
+  storage:
     image: scireum/s3-ninja:latest
-    container_name: file_storage
+    container_name: storage
+    networks:
+      - council-network
     ports:
       - "9444:9000"
     environment:
       - AWS_ACCESS_KEY_ID=AKIAIOSFODNN7EXAMPLE
       - AWS_SECRET_ACCESS_KEY=wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
       - S3NINJA_REGION=us-east-1
-      - S3NINJA_ENDPOINT=http://localhost:9444/s3
+      - S3NINJA_ENDPOINT=http://storage:9000/s3
 
-  insurance_service:
+  council_keycloak_db:
+    container_name: council_keycloak_db
+    image: postgres:latest
+    environment:
+      POSTGRES_PASSWORD: 1234
+      POSTGRES_USER: postgres
+      POSTGRES_DB: keycloak_db
+    ports:
+      - 5432:5432
+    networks:
+      - council-network
+
+  key:
+    image: quay.io/keycloak/keycloak:25.0.0
+    container_name: key
+    environment:
+      - KC_DB=postgres
+      - KC_DB_URL=jdbc:postgresql://council_keycloak_db:5432/keycloak_db
+      - KC_DB_USERNAME=postgres
+      - KC_DB_PASSWORD=1234
+      - KEYCLOAK_ADMIN=admin
+      - KEYCLOAK_ADMIN_PASSWORD=admin
+    command: start-dev
+    ports:
+      - 8081:8080
+    depends_on:
+      - council_keycloak_db
+    networks:
+      - council-network
+
+  council_service:
     build:
-      context: ../../../../../insurance-backend
+      context: ../../../../../student-council-backend
       dockerfile: src/main/docker/Dockerfile.jvm
-    container_name: insurance_service
+    container_name: council_service
+    networks:
+      - council-network
     environment:
       QUARKUS_DATASOURCE_PASSWORD: 1234
       QUARKUS_DATASOURCE_USERNAME: postgres
-      QUARKUS_DATASOURCE_JDBC_URL: jdbc:postgresql://insuranceDB:5432/insuranceDB
+      QUARKUS_DATASOURCE_JDBC_URL: jdbc:postgresql://councilDB:5432/councilDB
       QUARKUS_DATASOURCE_DB_KIND: postgresql
       QUARKUS_SMALLRYE_OPENAPI_ENABLE: TRUE
       QUARKUS_SMALLRYE_OPENAPI_PATH: /swagger
       QUARKUS_SWAGGER_UI_ENABLE: TRUE
       QUARKUS_SWAGGER_UI_PATH: /swagger-ui
+      quarkus_s3_endpoint: http://storage:9000/s3
+      quarkus_s3_aws_region: us-east-1
+      quarkus_s3_aws_credentials_access_key_id: AKIAIOSFODNN7EXAMPLE
+      quarkus_s3_aws_credentials_secret_access_key: wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
+      quarkus_oidc_auth_server_url: http://key:8080/realms/master
+      quarkus_oidc_client_server_url: http://key:8080
+      quarkus_oidc_client_id: Council
+      quarkus_oidc_credentials_secret: I5rD8tYIREJJnym0MH20J8GGAoyLEyuP
+      quarkus_oidc_application_type: service
     ports:
-      - 8080:8080
+      - 9001:9001
     depends_on:
       - postgres
+      - storage
+      - key

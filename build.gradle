@@ -21,8 +21,11 @@ dependencies {
     implementation 'io.quarkus:quarkus-rest-client-jackson'
     implementation 'io.quarkus:quarkus-rest-jsonb'
     implementation 'io.quarkus:quarkus-rest-jackson'
+    implementation 'io.quarkus:quarkus-keycloak-admin-rest-client'
+    implementation 'io.quarkus:quarkus-keycloak-authorization'
+    implementation 'io.quarkus:quarkus-oidc'
 
-    implementation 'com.fasterxml.jackson.core:jackson-core:2.18.2'
+    implementation 'com.fasterxml.jackson.core:jackson-core:2.17.0'
     implementation 'com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.18.2'
 
     implementation 'org.bytedeco:javacv:1.5.5'
@@ -31,9 +34,6 @@ dependencies {
     implementation 'org.bytedeco:ffmpeg-platform-gpl:4.3.2-1.5.5'
     implementation 'org.bytedeco:opencv:4.3.2-1.5.5'
     implementation 'org.sejda.imageio:webp-imageio:0.1.6'
-
-    implementation 'org.apache.tika:tika-server-core:2.9.2'
-    implementation 'org.apache.tika:tika-parsers:2.9.2'
 
     implementation platform('software.amazon.awssdk:bom:2.20.50')
     implementation 'software.amazon.awssdk:s3'

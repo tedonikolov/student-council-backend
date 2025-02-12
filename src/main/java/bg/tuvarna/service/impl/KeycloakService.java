@@ -1,0 +1,192 @@
+package bg.tuvarna.service.impl;
+
+import bg.tuvarna.enums.ProfileRole;
+import bg.tuvarna.model.dto.ProfileDTO;
+import bg.tuvarna.resources.execptions.CustomException;
+import bg.tuvarna.resources.execptions.ErrorCode;
+import bg.tuvarna.service.ProfileService;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
+import jakarta.ws.rs.core.Response;
+import org.eclipse.microprofile.config.inject.ConfigProperty;
+import org.keycloak.OAuth2Constants;
+import org.keycloak.admin.client.Keycloak;
+import org.keycloak.admin.client.KeycloakBuilder;
+import org.keycloak.admin.client.resource.RealmResource;
+import org.keycloak.representations.idm.ClientRepresentation;
+import org.keycloak.representations.idm.CredentialRepresentation;
+import org.keycloak.representations.idm.RoleRepresentation;
+import org.keycloak.representations.idm.UserRepresentation;
+
+import java.util.Collections;
+
+@ApplicationScoped
+public class KeycloakService {
+    private final String adminUsername = "admin";
+    private final String adminPassword = "admin";
+    private final String adminClientId = "admin-cli";
+    private final String realm = "master";
+
+    @ConfigProperty(name = "quarkus.oidc.credentials.secret")
+    String clientSecret;
+    @ConfigProperty(name = "quarkus.oidc.client-id")
+    String clientId;
+    @ConfigProperty(name = "quarkus.oidc.client-server-url")
+    String clientServerUri;
+
+    @Inject
+    ProfileService profileService;
+
+    private Keycloak getKeycloakClient() {
+        return KeycloakBuilder.builder()
+                .serverUrl(clientServerUri)
+                .realm(realm)
+                .grantType(OAuth2Constants.PASSWORD)
+                .username(adminUsername)
+                .password(adminPassword)
+                .clientId(adminClientId)
+                .clientSecret(clientSecret)
+                .build();
+    }
+
+    public void registerUser(String username, String email, String password) {
+        Keycloak keycloak = getKeycloakClient();
+        RealmResource realmResource = keycloak.realms().realm(realm);
+
+        UserRepresentation user = new UserRepresentation();
+        user.setUsername(username);
+//        user.setEmail(email);
+        user.setEnabled(true);
+
+        Response response = realmResource.users().create(user);
+
+        checkResponse(response);
+
+        CredentialRepresentation passwordCred = new CredentialRepresentation();
+        passwordCred.setTemporary(false);
+        passwordCred.setType(CredentialRepresentation.PASSWORD);
+        passwordCred.setValue(password);
+
+        user.setCredentials(Collections.singletonList(passwordCred));
+        UserRepresentation createdUser = realmResource.users().search(username).getFirst();
+
+        String userId = realmResource.users().search(username).getFirst().getId();
+
+        realmResource.users().get(userId).resetPassword(passwordCred);
+
+        RoleRepresentation defaultRole = realmResource.roles()
+                .get(ProfileRole.ADMIN.name()).toRepresentation();
+
+        realmResource.users().get(userId).roles().realmLevel().add(Collections.singletonList(defaultRole));
+
+        Response response1 = profileService.createProfile(new ProfileDTO(username,password));
+
+        checkResponse(response1);
+    }
+
+    private void checkResponse(Response response) {
+        if (response.getStatus() != 201 || response.getStatus() != 200) {
+            if (response.hasEntity()) {
+                String entity = response.readEntity(String.class);
+                if (entity.contains("errorMessage")) {
+                    String errorMessage = entity.substring(entity.indexOf("errorMessage") + 15, entity.lastIndexOf("\""));
+                    throw new CustomException(errorMessage, ErrorCode.AlreadyExists);
+                }
+            }
+        }
+    }
+
+    public String loginUser(String username, String password) {
+        try {
+            Keycloak keycloak = KeycloakBuilder.builder()
+                    .serverUrl(clientServerUri)
+                    .realm(realm)
+                    .grantType(OAuth2Constants.PASSWORD)
+                    .clientId(clientId)
+                    .clientSecret(clientSecret)
+                    .username(username)
+                    .password(password)
+                    .build();
+            return keycloak.tokenManager().getAccessTokenString();
+        } catch (Exception e) {
+            throw new RuntimeException("Invalid credentials");
+        }
+    }
+
+    public void setupKeycloak() {
+        Keycloak keycloak = getKeycloakClient();
+        try {
+            RealmResource realmResource = keycloak.realms().realm(realm);
+            boolean clientEmpty = realmResource.clients().findByClientId(clientId).isEmpty();
+            if (clientEmpty) {
+                ClientRepresentation client = getClientRepresentation();
+                Response response = realmResource.clients().create(client);
+                if (response.getStatus() == 201) {
+                    System.out.println(response.getLocation());
+                } else {
+                    String errorMessage = "Failed to create client: " + response.getStatus();
+                    if (response.hasEntity()) {
+                        errorMessage += " - " + response.readEntity(String.class);
+                    }
+                    throw new RuntimeException(errorMessage);
+                }
+            }
+
+            for (ProfileRole userType : ProfileRole.values()) {
+                RoleRepresentation role = new RoleRepresentation();
+                role.setName(userType.name());
+                role.setDescription("Role for " + userType.name());
+                try {
+                    realmResource.roles().get(role.getName()).toRepresentation();
+                } catch (Exception ignored) {
+                    realmResource.roles().create(role);
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private ClientRepresentation getClientRepresentation() {
+        ClientRepresentation client = new ClientRepresentation();
+        client.setClientId(clientId);
+        client.setSecret(clientSecret);
+//        client.setAuthorizationServicesEnabled(true);
+        client.setEnabled(true);
+        client.setDirectAccessGrantsEnabled(true);
+        client.setPublicClient(false);
+        client.setProtocol("openid-connect");
+        client.setServiceAccountsEnabled(true);
+        client.setClientAuthenticatorType("client-secret");
+        client.setRedirectUris(Collections.singletonList(clientServerUri));
+        return client;
+    }
+
+    public void verify(String email) {
+        Keycloak keycloak = getKeycloakClient();
+        RealmResource realmResource = keycloak.realms().realm(realm);
+        UserRepresentation user = realmResource.users().searchByEmail(email,true).getFirst();
+        user.setEmailVerified(true);
+        realmResource.users().get(user.getId()).update(user);
+    }
+
+    public void disable(String email) {
+        Keycloak keycloak = getKeycloakClient();
+        RealmResource realmResource = keycloak.realms().realm(realm);
+        UserRepresentation user = realmResource.users().searchByEmail(email,true).getFirst();
+        user.setEnabled(false);
+        realmResource.users().get(user.getId()).update(user);
+    }
+
+//    public void changeRole(ChangeRoleDTO changeRoleDTO) {
+//        Keycloak keycloak = getKeycloakClient();
+//        RealmResource realmResource = keycloak.realms().realm(realm);
+//        UserRepresentation user = realmResource.users().searchByEmail(changeRoleDTO.email(),true).getFirst();
+//        RoleRepresentation role = realmResource.roles().get(changeRoleDTO.oldType().name()).toRepresentation();
+//
+//        realmResource.users().get(user.getId()).roles().realmLevel().remove(Collections.singletonList(role));
+//
+//        role = realmResource.roles().get(changeRoleDTO.newType().name()).toRepresentation();
+//        realmResource.users().get(user.getId()).roles().realmLevel().add(Collections.singletonList(role));
+//    }
+}

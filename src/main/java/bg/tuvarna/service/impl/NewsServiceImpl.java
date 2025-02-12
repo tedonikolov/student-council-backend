@@ -22,7 +22,6 @@ import java.io.File;
 import java.io.IOException;
 import java.time.Year;
 import java.util.*;
-import java.util.logging.Logger;
 
 @ApplicationScoped
 public class NewsServiceImpl implements NewsService {
@@ -49,7 +48,6 @@ public class NewsServiceImpl implements NewsService {
             try {
                 String path = contentProcessingService.process(file, keyName);
                 keys.add(path);
-                Logger.getLogger(S3ServiceImpl.class.getName()).info("File uploaded successfully! " + keyName);
             } catch (Exception e) {
                 e.printStackTrace();
                 throw new CustomException("Error uploading files", ErrorCode.Failed);
