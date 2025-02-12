@@ -3,6 +3,7 @@ package bg.tuvarna.service.impl;
 import bg.tuvarna.service.ContentProcessingService;
 import bg.tuvarna.service.S3Service;
 import com.luciad.imageio.webp.WebPWriteParam;
+import eu.medsea.mimeutil.MimeUtil;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import org.bytedeco.ffmpeg.global.avcodec;
@@ -20,15 +21,19 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.util.Collection;
 
 @ApplicationScoped
 public class ContentProcessingServiceImpl implements ContentProcessingService {
     @Inject
     S3Service s3Service;
+    static {
+        MimeUtil.registerMimeDetector("eu.medsea.mimeutil.detector.MagicMimeMimeDetector");
+    }
 
     public String process(File file, String fileName) throws IOException {
         try {
-            String mimeType = "asd";
+            String mimeType = detectFileType(file);
 
             if (mimeType != null) {
                 if (mimeType.startsWith("image")) {
@@ -65,16 +70,12 @@ public class ContentProcessingServiceImpl implements ContentProcessingService {
         }
     }
 
-//    private String detectFileType(Path filePath) {
-//        Tika tika = new Tika();
-//        try {
-//            return tika.detect(filePath.toFile());
-//        } catch (IOException e) {
-//            System.out.println("Tika failed to determine file format: " + e.getMessage());
-//            e.printStackTrace();
-//            return "unknown";
-//        }
-//    }
+    private String detectFileType(File file) {
+
+        Collection<?> mimeTypes = MimeUtil.getMimeTypes(file);
+
+        return mimeTypes.isEmpty() ? "unknown" : mimeTypes.iterator().next().toString();
+    }
 
     public File convertToWebP(File inputFile) throws IOException {
         BufferedImage image = ImageIO.read(inputFile);
