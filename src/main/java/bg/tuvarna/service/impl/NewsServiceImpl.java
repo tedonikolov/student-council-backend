@@ -20,7 +20,6 @@ import jakarta.transaction.Transactional;
 
 import java.io.File;
 import java.io.IOException;
-import java.time.Year;
 import java.util.*;
 
 @ApplicationScoped
@@ -38,31 +37,56 @@ public class NewsServiceImpl implements NewsService {
     @Override
     @Transactional
     public News save(NewsRequestDTO newsRequestDTO) {
-        News news=NewsConverter.toEntity(newsRequestDTO.getCreateNewsDTO());
+        News news = NewsConverter.toEntity(newsRequestDTO.getCreateNewsDTO());
         newsRepository.persist(news);
 
-        List<String> keys = new ArrayList<>();
+        String keyName = news.id.toString() + "_" + 0;
+        try {
+            String path = contentProcessingService.process(newsRequestDTO.getFrontImage(), keyName);
+            news.setFrontImage(path);
+        } catch (IOException e) {
+            e.printStackTrace();
+            throw new CustomException("Error uploading files", ErrorCode.Failed);
+        }
+
+        List<String> images = new ArrayList<>();
         int i = 1;
-        for(File file: newsRequestDTO.getFiles()) {
-            String keyName = news.id.toString()+"_"+i;
+        for (File file : newsRequestDTO.getImages()) {
+            keyName = news.id.toString() + "_" + i;
             try {
                 String path = contentProcessingService.process(file, keyName);
-                keys.add(path);
+                images.add(path);
             } catch (Exception e) {
                 e.printStackTrace();
                 throw new CustomException("Error uploading files", ErrorCode.Failed);
             }
             i++;
         }
-        news.setImages(keys);
+
+        news.setImages(images);
+
+        List<String> videos = new ArrayList<>();
+        for (File file : newsRequestDTO.getVideos()) {
+            keyName = news.id.toString() + "_" + i;
+            try {
+                String path = contentProcessingService.process(file, keyName);
+                videos.add(path);
+            } catch (Exception e) {
+                e.printStackTrace();
+                throw new CustomException("Error uploading files", ErrorCode.Failed);
+            }
+            i++;
+        }
+
+        news.setVideos(videos);
+
         return news;
     }
 
     @Override
     @Transactional
-    //TODO: Implement update method
-    public News update(NewsRequestDTO newsRequestDTO, String id) {
-        News news=NewsConverter.toEntity(newsRequestDTO.getCreateNewsDTO());
+    public News update(NewsRequestDTO newsRequestDTO, Long id) {
+        News news = NewsConverter.toEntity(newsRequestDTO.getCreateNewsDTO());
         newsRepository.persist(news);
         return news;
     }
@@ -73,19 +97,19 @@ public class NewsServiceImpl implements NewsService {
     }
 
     @Override
-    public List<News> getAll() {
+    public List<NewsResponse> getAll() {
         List<News> news = newsRepository.listAll();
         news.sort(Comparator.comparing(News::getPublished).reversed());
-        return news;
+        return news.stream().map(this::convertToNewsResponse).toList();
     }
 
     @Override
-    public List<NewsResponse> lastThreeNews(){
-        List<News> news = newsRepository.findAll(Sort.by("id").descending()).stream().limit(3).toList();
+    public List<NewsResponse> lastThreeNews() {
+        List<News> news = newsRepository.findAll(Sort.by("published").descending()).stream().limit(3).toList();
 
         List<NewsResponse> newsResponse = new ArrayList<>();
 
-        for(News n: news){
+        for (News n : news) {
             newsResponse.add(convertToNewsResponse(n));
         }
 
@@ -93,25 +117,26 @@ public class NewsServiceImpl implements NewsService {
     }
 
     @Override
-    public List<News> getAllByYear(Year date) {
-        return new ArrayList<>();
+    public List<NewsResponse> getAllByYear(int year) {
+        List<News> news = newsRepository.findByYear(year);
+        return news.stream().map(this::convertToNewsResponse).toList();
     }
 
     @Override
     public NewsResponse getNews(Long id) {
-        News news = newsRepository.findByIdOptional(id).orElseThrow(()->new CustomException("News with id:"+id+" not found!", ErrorCode.EntityNotFound));
+        News news = newsRepository.findByIdOptional(id).orElseThrow(() -> new CustomException("News with id:" + id + " not found!", ErrorCode.EntityNotFound));
         return convertToNewsResponse(news);
     }
 
     @Override
     public CustomPage<NewsResponse> getPagesWithNews(PageRequest pageRequest) {
         PanacheQuery<News> news = newsRepository.findAll(Sort.by("id").descending());
-        List<News> newsList = news.page(Page.of(pageRequest.getPage()-1,
+        List<News> newsList = news.page(Page.of(pageRequest.getPage() - 1,
                 pageRequest.getItemsPerPage())).list();
 
         List<NewsResponse> newsResponse = new ArrayList<>();
 
-        for(News n: newsList){
+        for (News n : newsList) {
             newsResponse.add(convertToNewsResponse(n));
         }
 
@@ -122,29 +147,37 @@ public class NewsServiceImpl implements NewsService {
                 news.pageCount());
     }
 
-    private NewsResponse convertToNewsResponse(News news){
+    private NewsResponse convertToNewsResponse(News news) {
+        List<String> imagesUrl = new ArrayList<>();
+        List<String> videos = new ArrayList<>();
 
-            List<String> thumbnailsUrl = new ArrayList<>();
-            List<String> videos = new ArrayList<>();
-
-            if (news.getImages() != null) {
-                for (String url : news.getImages()) {
-                    byte[] file;
-                    try {
-                        file = s3Service.getFile(url).readAllBytes();
-                    } catch (IOException e) {
-                        continue;
-                    }
-                    if(url.startsWith("images/")){
-                        thumbnailsUrl.add(Base64.getEncoder().encodeToString(file));
-                        continue;
-                    }
-                    if(url.startsWith("videos/")){
-                        videos.add(Base64.getEncoder().encodeToString(file));
-                    }
+        if (news.getImages() != null) {
+            for (String url : news.getImages()) {
+                byte[] file;
+                try {
+                    file = s3Service.getFile(url).readAllBytes();
+                } catch (IOException e) {
+                    continue;
+                }
+                if (url.startsWith("images/")) {
+                    imagesUrl.add(Base64.getEncoder().encodeToString(file));
                 }
             }
+        }
+        if (news.getVideos() != null) {
+            for (String url : news.getVideos()) {
+                byte[] file;
+                try {
+                    file = s3Service.getFile(url).readAllBytes();
+                } catch (IOException e) {
+                    continue;
+                }
+                if (url.startsWith("videos/")) {
+                    videos.add(Base64.getEncoder().encodeToString(file));
+                }
+            }
+        }
 
-            return new NewsResponse(news, thumbnailsUrl, videos);
+        return new NewsResponse(news, imagesUrl, videos);
     }
 }

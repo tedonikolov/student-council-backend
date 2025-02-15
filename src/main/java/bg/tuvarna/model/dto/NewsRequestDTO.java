@@ -12,9 +12,17 @@ public class NewsRequestDTO {
     @PartType(MediaType.APPLICATION_JSON)
     private CreateNewsDTO createNewsDTO;
 
-    @FormParam("files")
+    @FormParam("images")
     @PartType("application/octet-stream")
-    private List<File> files;
+    private List<File> images;
+
+    @FormParam("videos")
+    @PartType("application/octet-stream")
+    private List<File> videos;
+
+    @FormParam("frontImage")
+    @PartType("application/octet-stream")
+    private File frontImage;
 
     public CreateNewsDTO getCreateNewsDTO() {
         return createNewsDTO;
@@ -24,11 +32,27 @@ public class NewsRequestDTO {
         this.createNewsDTO = createNewsDTO;
     }
 
-    public List<File> getFiles() {
-        return files;
+    public File getFrontImage() {
+        return frontImage;
     }
 
-    public void setFiles(List<File> files) {
-        this.files = files;
+    public void setFrontImage(File frontImage) {
+        this.frontImage = frontImage;
+    }
+
+    public List<File> getImages() {
+        return images;
+    }
+
+    public void setImages(List<File> images) {
+        this.images = images;
+    }
+
+    public List<File> getVideos() {
+        return videos;
+    }
+
+    public void setVideos(List<File> videos) {
+        this.videos = videos;
     }
 }

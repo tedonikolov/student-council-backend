@@ -11,19 +11,21 @@ public class NewsResponse {
     private String subtitle;
     private List<String> content;
     private LocalDate published;
-    private List<String> thumbnails;
+    private String thumbnail;
+    private List<String> images;
     private List<String> videos;
 
     public NewsResponse() {
     }
 
-    public NewsResponse(News news, List<String> thumbnails, List<String> videos) {
+    public NewsResponse(News news, List<String> images, List<String> videos) {
         this.id = news.id;
         this.title = news.getTitle();
         this.subtitle = news.getSubtitle();
         this.content = news.getContent();
         this.published = news.getPublished();
-        this.thumbnails = thumbnails;
+        this.thumbnail = news.getFrontImage();
+        this.images = images;
         this.videos = videos;
     }
 
@@ -59,12 +61,20 @@ public class NewsResponse {
         this.subtitle = subtitle;
     }
 
-    public List<String> getThumbnails() {
-        return thumbnails;
+    public List<String> getImages() {
+        return images;
     }
 
-    public void setThumbnails(List<String> thumbnails) {
-        this.thumbnails = thumbnails;
+    public void setImages(List<String> images) {
+        this.images = images;
+    }
+
+    public String getThumbnail() {
+        return thumbnail;
+    }
+
+    public void setThumbnail(String thumbnail) {
+        this.thumbnail = thumbnail;
     }
 
     public String getTitle() {
