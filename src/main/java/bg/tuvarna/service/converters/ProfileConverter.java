@@ -14,7 +14,7 @@ public class ProfileConverter {
     }
 
     public static ProfileDTO toDto(Profile profile, String image) {
-        return new ProfileDTO(profile.getUsername(), profile.getEmail(), profile.getFullName(), profile.getPhoneNumber(), profile.getGrade(), profile.getFaculty(), profile.getCouncil().getRoles(),profile.getCouncil().getFromYear(),profile.getCouncil().getToYear(), image);
+        return new ProfileDTO(profile.getUsername(), profile.getEmail(), profile.getRole(), profile.getFullName(), profile.getPhoneNumber(), profile.getGrade(), profile.getFaculty(), profile.getCouncil().getRoles(),profile.getCouncil().getFromYear(),profile.getCouncil().getToYear(), image);
     }
 
     public static void updateEntity(Profile profile, UserDto userDto) {
