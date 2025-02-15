@@ -39,3 +39,7 @@ nb-configuration.xml
 /.quarkus/cli/plugins/
 # TLS Certificates
 .certs/
+
+# docker
+src/main/docker/studentCouncil
+src/main/resources/application.properties
