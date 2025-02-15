@@ -1,17 +1,18 @@
 package bg.tuvarna.service;
 
-import bg.tuvarna.model.dto.PersonRequestDTO;
+import bg.tuvarna.model.dto.ProfileDTO;
+import bg.tuvarna.model.dto.UserDto;
 import bg.tuvarna.model.entities.Council;
 
 import java.util.List;
 
 public interface CouncilService {
-    Council save(PersonRequestDTO personRequestDTO);
-    Council update(PersonRequestDTO personRequestDTO, Long id);
+    Council saveCouncil(Long profileId, UserDto userDto);
+    void updateCouncil(Long id, UserDto userDto);
     void delete(Long id);
-    List<Council> getAll();
-    List<Council> getCouncil();
-    List<Council> getAdministrator();
-    List<Council> getChairman();
-    Council getPerson(Long id);
+    List<ProfileDTO> getAll();
+    List<ProfileDTO> getCouncil();
+    List<ProfileDTO> getAdministrator();
+    List<ProfileDTO> getChairman();
+    ProfileDTO getPerson(Long id);
 }

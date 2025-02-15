@@ -11,5 +11,6 @@ public enum CouncilRole {
     VOLUNTEER,
     CAREER,
     MEMBER,
+    CLUB,
     ASSOCIATE
 }

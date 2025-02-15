@@ -1,9 +1,8 @@
 package bg.tuvarna.model.entities;
 
+import bg.tuvarna.enums.Faculty;
 import io.quarkus.hibernate.orm.panache.PanacheEntity;
-import jakarta.persistence.Entity;
-import jakarta.persistence.OneToOne;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 
 import java.time.LocalDate;
 
@@ -11,9 +10,6 @@ import java.time.LocalDate;
 @Table(name = "profiles")
 public class Profile extends PanacheEntity {
     private String username;
-    private String password;
-    public String role;
-
     private String email;
     private String fullName;
     private String phoneNumber;
@@ -21,6 +17,8 @@ public class Profile extends PanacheEntity {
     private String imageUrl;
     private String grade;
     private LocalDate creationDate;
+    @Enumerated(value = EnumType.STRING)
+    private Faculty faculty;
 
     @OneToOne(mappedBy = "profile")
     private Council council;
@@ -81,14 +79,6 @@ public class Profile extends PanacheEntity {
         this.imageUrl = imageUrl;
     }
 
-    public String getPassword() {
-        return password;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
-    }
-
     public String getPhoneNumber() {
         return phoneNumber;
     }
@@ -97,19 +87,19 @@ public class Profile extends PanacheEntity {
         this.phoneNumber = phoneNumber;
     }
 
-    public String getRole() {
-        return role;
-    }
-
-    public void setRole(String role) {
-        this.role = role;
-    }
-
     public String getUsername() {
         return username;
     }
 
     public void setUsername(String username) {
         this.username = username;
+    }
+
+    public Faculty getFaculty() {
+        return faculty;
+    }
+
+    public void setFaculty(Faculty faculty) {
+        this.faculty = faculty;
     }
 }

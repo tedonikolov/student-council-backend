@@ -62,7 +62,7 @@ public class NewsResource {
     @GET
     @PermitAll
     @Path("/getByYear")
-    public Response lastThreeNews(@RestQuery("year") int year){
+    public Response getBbyYear(@RestQuery("year") int year){
         List<NewsResponse> news = newsService.getAllByYear(year);
         return Response.ok(news).build();
     }

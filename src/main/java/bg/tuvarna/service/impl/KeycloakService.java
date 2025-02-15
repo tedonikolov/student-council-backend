@@ -1,7 +1,9 @@
 package bg.tuvarna.service.impl;
 
+import bg.tuvarna.enums.CouncilRole;
 import bg.tuvarna.enums.ProfileRole;
-import bg.tuvarna.model.dto.ProfileDTO;
+import bg.tuvarna.model.dto.PersonRequestDTO;
+import bg.tuvarna.model.dto.UserDto;
 import bg.tuvarna.resources.execptions.CustomException;
 import bg.tuvarna.resources.execptions.ErrorCode;
 import bg.tuvarna.service.ProfileService;
@@ -19,6 +21,9 @@ import org.keycloak.representations.idm.RoleRepresentation;
 import org.keycloak.representations.idm.UserRepresentation;
 
 import java.util.Collections;
+import java.util.List;
+
+import static bg.tuvarna.enums.ProfileRole.*;
 
 @ApplicationScoped
 public class KeycloakService {
@@ -49,13 +54,12 @@ public class KeycloakService {
                 .build();
     }
 
-    public void registerUser(String username, String email, String password) {
+    public void registerUser(UserDto userDto) {
         Keycloak keycloak = getKeycloakClient();
         RealmResource realmResource = keycloak.realms().realm(realm);
 
         UserRepresentation user = new UserRepresentation();
-        user.setUsername(username);
-//        user.setEmail(email);
+        user.setUsername(userDto.getUsername());
         user.setEnabled(true);
 
         Response response = realmResource.users().create(user);
@@ -65,23 +69,33 @@ public class KeycloakService {
         CredentialRepresentation passwordCred = new CredentialRepresentation();
         passwordCred.setTemporary(false);
         passwordCred.setType(CredentialRepresentation.PASSWORD);
-        passwordCred.setValue(password);
+        passwordCred.setValue(userDto.getPassword());
 
         user.setCredentials(Collections.singletonList(passwordCred));
-        UserRepresentation createdUser = realmResource.users().search(username).getFirst();
 
-        String userId = realmResource.users().search(username).getFirst().getId();
+        String userId = realmResource.users().search(userDto.getUsername()).getFirst().getId();
 
         realmResource.users().get(userId).resetPassword(passwordCred);
 
         RoleRepresentation defaultRole = realmResource.roles()
-                .get(ProfileRole.ADMIN.name()).toRepresentation();
+                .get(getRole(userDto.getRoles())).toRepresentation();
 
         realmResource.users().get(userId).roles().realmLevel().add(Collections.singletonList(defaultRole));
 
-        Response response1 = profileService.createProfile(new ProfileDTO(username,password));
+        Response response1 = profileService.createProfile(new PersonRequestDTO(userDto));
 
         checkResponse(response1);
+    }
+
+    private String getRole(List<CouncilRole> roles) {
+        for (CouncilRole role : roles) {
+            return switch (role) {
+                case PRESIDENT, VICE_PRESIDENT, SECRETARY -> ADMIN.name();
+                case ACCOUNTANT, FACULTY, PR, SPORT, VOLUNTEER, CAREER, MEMBER, ASSOCIATE -> COUNCIL.name();
+                case CLUB -> CLUB.name();
+            };
+        }
+        return STUDENT.name();
     }
 
     private void checkResponse(Response response) {

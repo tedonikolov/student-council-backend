@@ -1,16 +1,40 @@
 package bg.tuvarna.model.dto;
 
-import bg.tuvarna.enums.CouncilRole;
-import jakarta.validation.constraints.NotEmpty;
-import jakarta.validation.constraints.NotNull;
 
-import java.util.List;
+import jakarta.ws.rs.FormParam;
+import jakarta.ws.rs.core.MediaType;
+import org.jboss.resteasy.reactive.PartType;
 
-public record PersonRequestDTO(
-    @NotEmpty(message = "Въведете име!") String name,
-    @NotNull(message = "Изберете снимка!") String imageUrl,
-    @NotEmpty(message = "Изберете длъжност!") List<CouncilRole> roles,
-    String description,
-    String grade
-) {
+import java.io.File;
+
+public class PersonRequestDTO {
+    @FormParam("userDto")
+    @PartType(MediaType.APPLICATION_JSON)
+    private UserDto userDto;
+    @FormParam("image")
+    @PartType("application/octet-stream")
+    private File image;
+
+    public PersonRequestDTO() {
+    }
+
+    public PersonRequestDTO(UserDto userDto) {
+        this.userDto = userDto;
+    }
+
+    public File getImage() {
+        return image;
+    }
+
+    public void setImage(File image) {
+        this.image = image;
+    }
+
+    public UserDto getUserDto() {
+        return userDto;
+    }
+
+    public void setUserDto(UserDto userDto) {
+        this.userDto = userDto;
+    }
 }

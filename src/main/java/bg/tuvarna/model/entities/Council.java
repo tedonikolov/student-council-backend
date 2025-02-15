@@ -13,9 +13,10 @@ public class Council {
     @Column(name = "profile_id", nullable = false)
     private Long id;
 
+    @ElementCollection
     private List<CouncilRole> roles;
-    private String fromYear;
-    private String toYear;
+    private int fromYear;
+    private int toYear;
 
     @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "profile_id")
@@ -38,11 +39,11 @@ public class Council {
         this.profile = profile;
     }
 
-    public String getFromYear() {
+    public int getFromYear() {
         return fromYear;
     }
 
-    public void setFromYear(String fromYear) {
+    public void setFromYear(int fromYear) {
         this.fromYear = fromYear;
     }
 
@@ -54,11 +55,11 @@ public class Council {
         this.roles = roles;
     }
 
-    public String getToYear() {
+    public int getToYear() {
         return toYear;
     }
 
-    public void setToYear(String toYear) {
+    public void setToYear(int toYear) {
         this.toYear = toYear;
     }
 }
