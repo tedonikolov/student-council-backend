@@ -64,12 +64,16 @@ public class ProfileServiceImpl implements ProfileService {
     public ProfileDTO getProfile(String name) {
         Profile profile = profileRepository.findByName(name);
 
+        if (profile == null) {
+            throw new CustomException("Profile not found", ErrorCode.EntityNotFound);
+        }
+
         String frontImage;
         byte[] file;
         try {
             file = s3Service.getFile(profile.getImageUrl()).readAllBytes();
             frontImage = Base64.getEncoder().encodeToString(file);
-        } catch (IOException e) {
+        } catch (IOException | RuntimeException e) {
             return ProfileConverter.toDto(profile, null);
         }
 
