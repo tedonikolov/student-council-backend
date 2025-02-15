@@ -7,6 +7,6 @@ import jakarta.enterprise.context.ApplicationScoped;
 @ApplicationScoped
 public class ProfileRepository implements PanacheRepository<Profile> {
     public Profile findByName(String name) {
-        return find("name", name).firstResult();
+        return find("username", name).firstResult();
     }
 }
