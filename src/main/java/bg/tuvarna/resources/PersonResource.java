@@ -24,7 +24,7 @@ public class PersonResource {
     @Path("/add")
     @RolesAllowed("admin")
     public Response save(@RequestBody PersonRequestDTO personRequestDTO) {
-        profileService.createProfile(personRequestDTO);
+        profileService.createProfile(personRequestDTO,null);
         return Response.ok("Person added successful!").build();
     }
 

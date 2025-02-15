@@ -14,6 +14,7 @@ public class Council {
     private Long id;
 
     @ElementCollection
+    @Enumerated(EnumType.STRING)
     private List<CouncilRole> roles;
     private int fromYear;
     private int toYear;

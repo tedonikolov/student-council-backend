@@ -78,24 +78,24 @@ public class KeycloakService {
         realmResource.users().get(userId).resetPassword(passwordCred);
 
         RoleRepresentation defaultRole = realmResource.roles()
-                .get(getRole(userDto.getRoles())).toRepresentation();
+                .get(getRole(userDto.getRoles()).name()).toRepresentation();
 
         realmResource.users().get(userId).roles().realmLevel().add(Collections.singletonList(defaultRole));
 
-        Response response1 = profileService.createProfile(new PersonRequestDTO(userDto));
+        Response response1 = profileService.createProfile(new PersonRequestDTO(userDto),getRole(userDto.getRoles()));
 
         checkResponse(response1);
     }
 
-    private String getRole(List<CouncilRole> roles) {
+    private ProfileRole getRole(List<CouncilRole> roles) {
         for (CouncilRole role : roles) {
             return switch (role) {
-                case PRESIDENT, VICE_PRESIDENT, SECRETARY -> ADMIN.name();
-                case ACCOUNTANT, FACULTY, PR, SPORT, VOLUNTEER, CAREER, MEMBER, ASSOCIATE -> COUNCIL.name();
-                case CLUB -> CLUB.name();
+                case PRESIDENT, VICE_PRESIDENT, SECRETARY -> ADMIN;
+                case ACCOUNTANT, FACULTY, PR, SPORT, VOLUNTEER, CAREER, MEMBER, ASSOCIATE -> COUNCIL;
+                case CLUB -> CLUB;
             };
         }
-        return STUDENT.name();
+        return STUDENT;
     }
 
     private void checkResponse(Response response) {

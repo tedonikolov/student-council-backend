@@ -1,6 +1,7 @@
 package bg.tuvarna.model.entities;
 
 import bg.tuvarna.enums.Faculty;
+import bg.tuvarna.enums.ProfileRole;
 import io.quarkus.hibernate.orm.panache.PanacheEntity;
 import jakarta.persistence.*;
 
@@ -11,6 +12,8 @@ import java.time.LocalDate;
 public class Profile extends PanacheEntity {
     private String username;
     private String email;
+    @Enumerated(value = EnumType.STRING)
+    private ProfileRole role;
     private String fullName;
     private String phoneNumber;
     private boolean frozen = false;
@@ -101,5 +104,13 @@ public class Profile extends PanacheEntity {
 
     public void setFaculty(Faculty faculty) {
         this.faculty = faculty;
+    }
+
+    public ProfileRole getRole() {
+        return role;
+    }
+
+    public void setRole(ProfileRole role) {
+        this.role = role;
     }
 }

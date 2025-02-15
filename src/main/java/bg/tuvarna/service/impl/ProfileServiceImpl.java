@@ -1,5 +1,6 @@
 package bg.tuvarna.service.impl;
 
+import bg.tuvarna.enums.ProfileRole;
 import bg.tuvarna.model.dto.PersonRequestDTO;
 import bg.tuvarna.model.dto.ProfileDTO;
 import bg.tuvarna.model.entities.Council;
@@ -36,8 +37,9 @@ public class ProfileServiceImpl implements ProfileService {
 
     @Override
     @Transactional
-    public Response createProfile(PersonRequestDTO requestDTO) {
+    public Response createProfile(PersonRequestDTO requestDTO, ProfileRole role) {
         Profile profile = ProfileConverter.toEntity(requestDTO.getUserDto());
+        profile.setRole(role);
 
         profileRepository.persist(profile);
 
