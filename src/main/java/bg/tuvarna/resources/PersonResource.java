@@ -3,12 +3,11 @@ package bg.tuvarna.resources;
 import bg.tuvarna.model.dto.PersonRequestDTO;
 import bg.tuvarna.service.CouncilService;
 import bg.tuvarna.service.ProfileService;
+import jakarta.annotation.security.PermitAll;
+import jakarta.annotation.security.RolesAllowed;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.Response;
 import org.eclipse.microprofile.openapi.annotations.parameters.RequestBody;
-
-import javax.annotation.security.PermitAll;
-import javax.annotation.security.RolesAllowed;
 
 @Path("/sc-api/v1/person")
 public class PersonResource {
