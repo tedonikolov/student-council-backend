@@ -52,7 +52,7 @@ services:
       - KEYCLOAK_ADMIN_PASSWORD=admin
     command: start-dev
     ports:
-      - 8081:8080
+      - 8080:8080
     depends_on:
       - council_keycloak_db
     networks:
@@ -83,8 +83,13 @@ services:
       quarkus_oidc_client_id: Council
       quarkus_oidc_credentials_secret: I5rD8tYIREJJnym0MH20J8GGAoyLEyuP
       quarkus_oidc_application_type: service
+      quarkus_http_ssl_certificate_files: /etc/letsencrypt/live/server.sc-tuvarna.social/cert.pem
+      quarkus_http_ssl_certificate_key_files: /etc/letsencrypt/live/server.sc-tuvarna.social/privkey.pem
     ports:
+      - 443:443
       - 9001:9001
+    volumes:
+      - /etc/letsencrypt:/etc/letsencrypt:ro
     depends_on:
       - postgres
       - storage
