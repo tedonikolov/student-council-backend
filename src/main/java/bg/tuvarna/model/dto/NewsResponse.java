@@ -18,13 +18,13 @@ public class NewsResponse {
     public NewsResponse() {
     }
 
-    public NewsResponse(News news, List<String> images, List<String> videos) {
+    public NewsResponse(News news, String frontImage, List<String> images, List<String> videos) {
         this.id = news.id;
         this.title = news.getTitle();
         this.subtitle = news.getSubtitle();
         this.content = news.getContent();
         this.published = news.getPublished();
-        this.thumbnail = news.getFrontImage();
+        this.thumbnail = frontImage;
         this.images = images;
         this.videos = videos;
     }

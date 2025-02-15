@@ -148,12 +148,19 @@ public class NewsServiceImpl implements NewsService {
     }
 
     private NewsResponse convertToNewsResponse(News news) {
+        String frontImage = null;
+        byte[] file;
+        try {
+            file = s3Service.getFile(news.getFrontImage()).readAllBytes();
+            frontImage = Base64.getEncoder().encodeToString(file);
+        } catch (IOException e) {
+
+        }
         List<String> imagesUrl = new ArrayList<>();
         List<String> videos = new ArrayList<>();
 
         if (news.getImages() != null) {
             for (String url : news.getImages()) {
-                byte[] file;
                 try {
                     file = s3Service.getFile(url).readAllBytes();
                 } catch (IOException e) {
@@ -166,7 +173,6 @@ public class NewsServiceImpl implements NewsService {
         }
         if (news.getVideos() != null) {
             for (String url : news.getVideos()) {
-                byte[] file;
                 try {
                     file = s3Service.getFile(url).readAllBytes();
                 } catch (IOException e) {
@@ -178,6 +184,6 @@ public class NewsServiceImpl implements NewsService {
             }
         }
 
-        return new NewsResponse(news, imagesUrl, videos);
+        return new NewsResponse(news, frontImage, imagesUrl, videos);
     }
 }
