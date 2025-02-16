@@ -15,13 +15,11 @@ import org.keycloak.OAuth2Constants;
 import org.keycloak.admin.client.Keycloak;
 import org.keycloak.admin.client.KeycloakBuilder;
 import org.keycloak.admin.client.resource.RealmResource;
-import org.keycloak.representations.idm.ClientRepresentation;
-import org.keycloak.representations.idm.CredentialRepresentation;
-import org.keycloak.representations.idm.RoleRepresentation;
-import org.keycloak.representations.idm.UserRepresentation;
+import org.keycloak.representations.idm.*;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.logging.Logger;
 
 import static bg.tuvarna.enums.ProfileRole.*;
 
@@ -31,6 +29,7 @@ public class KeycloakService {
     private final String adminPassword = "admin";
     private final String adminClientId = "admin-cli";
     private final String realm = "master";
+    private static final Logger LOG = Logger.getLogger(String.valueOf(KeycloakService.class));
 
     @ConfigProperty(name = "quarkus.oidc.credentials.secret")
     String clientSecret;
@@ -131,6 +130,7 @@ public class KeycloakService {
         Keycloak keycloak = getKeycloakClient();
         try {
             RealmResource realmResource = keycloak.realms().realm(realm);
+            setAccessTokenLifespan(realmResource, 3600);
             boolean clientEmpty = realmResource.clients().findByClientId(clientId).isEmpty();
             if (clientEmpty) {
                 ClientRepresentation client = getClientRepresentation();
@@ -174,6 +174,18 @@ public class KeycloakService {
         client.setClientAuthenticatorType("client-secret");
         client.setRedirectUris(Collections.singletonList(clientServerUri));
         return client;
+    }
+
+    public void setAccessTokenLifespan(RealmResource realmResource, int accessTokenLifespan) {
+        RealmRepresentation realm = realmResource.toRepresentation();
+        Integer realmAccessTokenLifespan = realm.getAccessTokenLifespan();
+        if (realmAccessTokenLifespan != accessTokenLifespan) {
+            realm.setAccessTokenLifespan(accessTokenLifespan);
+            realmResource.update(realm);
+            LOG.info("Updated realm's token lifespan to: " + accessTokenLifespan + " (seconds)");
+        } else {
+            LOG.info("Realm's token lifespan is already " + accessTokenLifespan + " (seconds)");
+        }
     }
 
     public void verify(String email) {
