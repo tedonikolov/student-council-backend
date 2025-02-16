@@ -22,7 +22,7 @@ public class PersonResource {
 
     @POST
     @Path("/add")
-    @RolesAllowed("admin")
+    @RolesAllowed("ADMIN")
     public Response save(@RequestBody PersonRequestDTO personRequestDTO) {
         profileService.createProfile(personRequestDTO,null);
         return Response.ok("Person added successful!").build();
@@ -30,7 +30,7 @@ public class PersonResource {
 
     @PUT
     @Path("/update/{id}")
-    @RolesAllowed("admin")
+    @RolesAllowed("ADMIN")
     public Response update(@RequestBody PersonRequestDTO personRequestDTO, @PathParam("id") Long id){
         profileService.update(personRequestDTO, id);
         return Response.ok("Update successful!").build();
@@ -38,7 +38,7 @@ public class PersonResource {
 
     @DELETE
     @Path("/delete/{id}")
-    @RolesAllowed("admin")
+    @RolesAllowed("ADMIN")
     public Response delete(@PathParam("id") Long id) {
         councilService.delete(id);
         return Response.ok("Deleted successful!").build();
@@ -46,14 +46,14 @@ public class PersonResource {
 
     @GET
     @Path("/{id}")
-    @RolesAllowed("admin")
+    @RolesAllowed("ADMIN")
     public Response getPerson(@PathParam("id") Long id) {
         return Response.ok(councilService.getPerson(id)).build();
     }
 
     @GET
     @Path("/all/person")
-    @RolesAllowed("admin")
+    @RolesAllowed("ADMIN")
     public Response getAllPerson() {
         return Response.ok(councilService.getAll()).build();
     }
