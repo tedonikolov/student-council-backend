@@ -101,7 +101,7 @@ public class NewsServiceImpl implements NewsService {
     public List<NewsResponse> getAll() {
         List<News> news = newsRepository.listAll();
         news.sort(Comparator.comparing(News::getPublished).reversed());
-        return news.stream().map(this::convertToNewsResponse).toList();
+        return news.stream().map(value-> convertToNewsResponse(value,false)).toList();
     }
 
     @Override
@@ -111,7 +111,7 @@ public class NewsServiceImpl implements NewsService {
         List<NewsResponse> newsResponse = new ArrayList<>();
 
         for (News n : news) {
-            newsResponse.add(convertToNewsResponse(n));
+            newsResponse.add(convertToNewsResponse(n,false));
         }
 
         return newsResponse;
@@ -120,13 +120,13 @@ public class NewsServiceImpl implements NewsService {
     @Override
     public List<NewsResponse> getAllByYear(int year) {
         List<News> news = newsRepository.findByYear(year);
-        return news.stream().map(this::convertToNewsResponse).toList();
+        return news.stream().map(value-> convertToNewsResponse(value,false)).toList();
     }
 
     @Override
     public NewsResponse getNews(Long id) {
         News news = newsRepository.findByIdOptional(id).orElseThrow(() -> new CustomException("News with id:" + id + " not found!", ErrorCode.EntityNotFound));
-        return convertToNewsResponse(news);
+        return convertToNewsResponse(news,true);
     }
 
     @Override
@@ -138,7 +138,7 @@ public class NewsServiceImpl implements NewsService {
         List<NewsResponse> newsResponse = new ArrayList<>();
 
         for (News n : newsList) {
-            newsResponse.add(convertToNewsResponse(n));
+            newsResponse.add(convertToNewsResponse(n,false));
         }
 
         return new CustomPage<>(pageRequest.getPage(),
@@ -148,7 +148,7 @@ public class NewsServiceImpl implements NewsService {
                 news.pageCount());
     }
 
-    private NewsResponse convertToNewsResponse(News news) {
+    private NewsResponse convertToNewsResponse(News news, Boolean all) {
         String frontImage = null;
         byte[] file;
         try {
@@ -160,27 +160,29 @@ public class NewsServiceImpl implements NewsService {
         List<String> imagesUrl = new ArrayList<>();
         List<String> videos = new ArrayList<>();
 
-        if (news.getImages() != null) {
-            for (String url : news.getImages()) {
-                try {
-                    file = s3Service.getFile(url).readAllBytes();
-                } catch (IOException e) {
-                    continue;
-                }
-                if (url.startsWith("images/")) {
-                    imagesUrl.add(Base64.getEncoder().encodeToString(file));
+        if(all) {
+            if (news.getImages() != null) {
+                for (String url : news.getImages()) {
+                    try {
+                        file = s3Service.getFile(url).readAllBytes();
+                    } catch (IOException e) {
+                        continue;
+                    }
+                    if (url.startsWith("images/")) {
+                        imagesUrl.add(Base64.getEncoder().encodeToString(file));
+                    }
                 }
             }
-        }
-        if (news.getVideos() != null) {
-            for (String url : news.getVideos()) {
-                try {
-                    file = s3Service.getFile(url).readAllBytes();
-                } catch (IOException e) {
-                    continue;
-                }
-                if (url.startsWith("videos/")) {
-                    videos.add(Base64.getEncoder().encodeToString(file));
+            if (news.getVideos() != null) {
+                for (String url : news.getVideos()) {
+                    try {
+                        file = s3Service.getFile(url).readAllBytes();
+                    } catch (IOException e) {
+                        continue;
+                    }
+                    if (url.startsWith("videos/")) {
+                        videos.add(Base64.getEncoder().encodeToString(file));
+                    }
                 }
             }
         }
