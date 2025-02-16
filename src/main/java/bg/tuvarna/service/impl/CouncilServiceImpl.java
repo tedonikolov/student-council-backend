@@ -65,7 +65,7 @@ public class CouncilServiceImpl implements CouncilService {
                         byte[] file = s3Service.getFile(council.getProfile().getImageUrl()).readAllBytes();
                         String image = Base64.getEncoder().encodeToString(file);
                         return new ProfileDTO(council, image);
-                    } catch (IOException e) {
+                    } catch (IOException | RuntimeException e) {
                         return new ProfileDTO(council, null);
                     }
                 }
@@ -104,7 +104,7 @@ public class CouncilServiceImpl implements CouncilService {
             byte[] file = s3Service.getFile(council.getProfile().getImageUrl()).readAllBytes();
             String image = Base64.getEncoder().encodeToString(file);
             return new ProfileDTO(council, image);
-        } catch (IOException e) {
+        } catch (IOException | RuntimeException e) {
             return new ProfileDTO(council, null);
         }
     }

@@ -153,7 +153,7 @@ public class NewsServiceImpl implements NewsService {
         try {
             file = s3Service.getFile(news.getFrontImage()).readAllBytes();
             frontImage = Base64.getEncoder().encodeToString(file);
-        } catch (IOException e) {
+        } catch (IOException | RuntimeException e) {
 
         }
         List<String> imagesUrl = new ArrayList<>();
