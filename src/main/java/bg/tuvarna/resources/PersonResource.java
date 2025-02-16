@@ -6,6 +6,7 @@ import bg.tuvarna.service.ProfileService;
 import jakarta.annotation.security.PermitAll;
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.ws.rs.*;
+import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import org.eclipse.microprofile.openapi.annotations.parameters.RequestBody;
 
@@ -23,6 +24,7 @@ public class PersonResource {
     @POST
     @Path("/add")
     @RolesAllowed("ADMIN")
+    @Consumes(MediaType.MULTIPART_FORM_DATA)
     public Response save(@RequestBody PersonRequestDTO personRequestDTO) {
         profileService.createProfile(personRequestDTO,null);
         return Response.ok("Person added successful!").build();
@@ -31,6 +33,7 @@ public class PersonResource {
     @PUT
     @Path("/update/{id}")
     @RolesAllowed("ADMIN")
+    @Consumes(MediaType.MULTIPART_FORM_DATA)
     public Response update(@RequestBody PersonRequestDTO personRequestDTO, @PathParam("id") Long id){
         profileService.update(personRequestDTO, id);
         return Response.ok("Update successful!").build();
