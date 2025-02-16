@@ -92,6 +92,7 @@ public class NewsServiceImpl implements NewsService {
     }
 
     @Override
+    @Transactional
     public void delete(Long id) {
         newsRepository.deleteById(id);
     }
