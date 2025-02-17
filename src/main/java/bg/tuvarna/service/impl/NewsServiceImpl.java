@@ -87,7 +87,54 @@ public class NewsServiceImpl implements NewsService {
     @Transactional
     public News update(NewsRequestDTO newsRequestDTO, Long id) {
         News news = NewsConverter.toEntity(newsRequestDTO.getCreateNewsDTO());
+        news.id = id;
         newsRepository.persist(news);
+
+        if(newsRequestDTO.getFrontImage() != null) {
+            String keyName = "news/" + news.id.toString() + "_" + 0;
+            try {
+                String path = contentProcessingService.process(newsRequestDTO.getFrontImage(), keyName);
+                news.setFrontImage(path);
+            } catch (IOException e) {
+                e.printStackTrace();
+                throw new CustomException("Error uploading files", ErrorCode.Failed);
+            }
+        }
+
+        if(newsRequestDTO.getImages() != null) {
+            List<String> images = new ArrayList<>();
+            int i = 1;
+            for (File file : newsRequestDTO.getImages()) {
+                String keyName = "news/" + news.id.toString() + "_" + i;
+                try {
+                    String path = contentProcessingService.process(file, keyName);
+                    images.add(path);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    throw new CustomException("Error uploading files", ErrorCode.Failed);
+                }
+                i++;
+            }
+            news.setImages(images);
+        }
+
+        if(newsRequestDTO.getVideos() != null) {
+            List<String> videos = new ArrayList<>();
+            int i = 1;
+            for (File file : newsRequestDTO.getVideos()) {
+                String keyName = "news/" + news.id.toString() + "_" + i;
+                try {
+                    String path = contentProcessingService.process(file, keyName);
+                    videos.add(path);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    throw new CustomException("Error uploading files", ErrorCode.Failed);
+                }
+                i++;
+            }
+            news.setVideos(videos);
+        }
+
         return news;
     }
 
