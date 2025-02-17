@@ -40,7 +40,7 @@ public class NewsServiceImpl implements NewsService {
         News news = NewsConverter.toEntity(newsRequestDTO.getCreateNewsDTO());
         newsRepository.persist(news);
 
-        String keyName = news.id.toString() + "_" + 0;
+        String keyName = "news/"+news.id.toString() + "_" + 0;
         try {
             String path = contentProcessingService.process(newsRequestDTO.getFrontImage(), keyName);
             news.setFrontImage(path);
@@ -52,7 +52,7 @@ public class NewsServiceImpl implements NewsService {
         List<String> images = new ArrayList<>();
         int i = 1;
         for (File file : newsRequestDTO.getImages()) {
-            keyName = news.id.toString() + "_" + i;
+            keyName = "news/"+ news.id.toString() + "_" + i;
             try {
                 String path = contentProcessingService.process(file, keyName);
                 images.add(path);
@@ -67,7 +67,7 @@ public class NewsServiceImpl implements NewsService {
 
         List<String> videos = new ArrayList<>();
         for (File file : newsRequestDTO.getVideos()) {
-            keyName = news.id.toString() + "_" + i;
+            keyName = "news/"+ news.id.toString() + "_" + i;
             try {
                 String path = contentProcessingService.process(file, keyName);
                 videos.add(path);

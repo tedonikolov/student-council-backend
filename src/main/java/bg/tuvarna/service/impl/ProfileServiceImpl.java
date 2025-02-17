@@ -44,7 +44,7 @@ public class ProfileServiceImpl implements ProfileService {
         profileRepository.persist(profile);
 
         if (requestDTO.getImage()!=null) {
-            String keyName = profile.id.toString() + "_" + 0;
+            String keyName = "profile/"+profile.id.toString() + "_" + 0;
             try {
                 String path = contentProcessingService.process(requestDTO.getImage(), keyName);
                 profile.setImageUrl(path);
@@ -99,7 +99,7 @@ public class ProfileServiceImpl implements ProfileService {
         ProfileConverter.updateEntity(profile, personRequestDTO.getUserDto());
 
         if (personRequestDTO.getImage()!=null) {
-            String keyName = profile.id.toString() + "_" + 0;
+            String keyName = "profile/"+profile.id.toString() + "_" + 0;
             try {
                 String path = contentProcessingService.process(personRequestDTO.getImage(), keyName);
                 profile.setImageUrl(path);
