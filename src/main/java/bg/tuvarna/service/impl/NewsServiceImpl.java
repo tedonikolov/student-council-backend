@@ -80,15 +80,16 @@ public class NewsServiceImpl implements NewsService {
 
         news.setVideos(videos);
 
+        newsRepository.persist(news);
+
         return news;
     }
 
     @Override
     @Transactional
     public News update(NewsRequestDTO newsRequestDTO, Long id) {
-        News news = NewsConverter.toEntity(newsRequestDTO.getCreateNewsDTO());
-        news.id = id;
-        newsRepository.persist(news);
+        News news = newsRepository.findById(id);
+        NewsConverter.updateEntity(news,newsRequestDTO.getCreateNewsDTO());
 
         if(newsRequestDTO.getFrontImage() != null) {
             String keyName = "news/" + news.id.toString() + "_" + 0;
@@ -134,6 +135,8 @@ public class NewsServiceImpl implements NewsService {
             }
             news.setVideos(videos);
         }
+
+        newsRepository.persist(news);
 
         return news;
     }

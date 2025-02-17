@@ -10,10 +10,14 @@ import java.time.LocalDate;
 public class NewsConverter {
     public static News toEntity(CreateNewsDTO newsDTO) {
         News news = new News();
+        updateEntity(news, newsDTO);
+        news.setPublished(LocalDate.now());
+        return news;
+    }
+
+    public static void updateEntity(News news, CreateNewsDTO newsDTO) {
         news.setTitle(newsDTO.title());
         news.setSubtitle(newsDTO.subtitle());
         news.setContent(newsDTO.content());
-        news.setPublished(LocalDate.now());
-        return news;
     }
 }
