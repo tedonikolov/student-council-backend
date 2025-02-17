@@ -8,6 +8,7 @@ import bg.tuvarna.model.entities.Council;
 import java.util.List;
 
 public record ProfileDTO(
+        Long id,
         String username,
         String email,
         ProfileRole role,
@@ -21,6 +22,6 @@ public record ProfileDTO(
         String image
 ) {
     public ProfileDTO (Council council, String image){
-        this(council.getProfile().getUsername(), council.getProfile().getEmail(), council.getProfile().getRole(), council.getProfile().getFullName(), council.getProfile().getPhoneNumber(), council.getProfile().getGrade(), council.getProfile().getFaculty(), council.getRoles(), council.getFromYear(), council.getToYear(), image);
+        this(council.getId(),council.getProfile().getUsername(), council.getProfile().getEmail(), council.getProfile().getRole(), council.getProfile().getFullName(), council.getProfile().getPhoneNumber(), council.getProfile().getGrade(), council.getProfile().getFaculty(), council.getRoles(), council.getFromYear(), council.getToYear(), image);
     }
 }
